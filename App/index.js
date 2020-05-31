@@ -16,7 +16,7 @@ import {
   Search2,
   Profile,
   Splash
-} from "./Screens";
+} from "./Screens.js";
 
 const AuthStack = createStackNavigator();
 const AuthStackScreen = () => (
