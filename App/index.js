@@ -83,7 +83,6 @@ const DrawerScreen = () => (
 const RootStack = createStackNavigator();
 const RootStackScreen = ({ userToken }) => (
   <RootStack.Navigator headerMode="none">
-    {console.log(userToken)}
     {userToken ? (
       <RootStack.Screen
         name="App"
@@ -203,7 +202,6 @@ export default () => {
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>
-        {console.log(loginState.userToken)}
         <RootStackScreen userToken={loginState.userToken} />
       </NavigationContainer>
     </AuthContext.Provider>
