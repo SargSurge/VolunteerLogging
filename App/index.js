@@ -3,13 +3,25 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
+import * as firebase from 'firebase';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD47y-yAHSEJXE9RgSwgosKIdEYNf2nVwA",
+  authDomain: "vlog-e051f.firebaseapp.com",
+  databaseURL: "https://vlog-e051f.firebaseio.com",
+  projectId: "vlog-e051f",
+  storageBucket: "vlog-e051f.appspot.com",
+  messagingSenderId: "443390883046",
+  appId: "1:443390883046:web:7a576c4b5509b94a443727",
+  measurementId: "G-5J46PSYM7M"
+};
+
+firebase.initializeApp(firebaseConfig);
 
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { AuthContext } from "./context";
 import {
-  SignIn,
-  CreateAccount,
   Search,
   Home,
   Details,
@@ -18,9 +30,16 @@ import {
   Splash
 } from "./Screens.js";
 
+import { SignIn, CreateAccount, DecisionScreen } from "./Screens/AuthScreens"
+
 const AuthStack = createStackNavigator();
 const AuthStackScreen = () => (
-  <AuthStack.Navigator>
+  <AuthStack.Navigator headerMode="none">
+    <AuthStack.Screen
+      name="DecisionScreen"
+      component={DecisionScreen}
+      options={{ title: "Sign In" }}
+    />
     <AuthStack.Screen
       name="SignIn"
       component={SignIn}
@@ -110,33 +129,29 @@ export default () => {
       signIn: async(username, password) => {
         let userToken;
         userToken = null;
-        if(username === 'user' && password === 'pass'){
-          userToken = 'wasd';
-          dispatch({type: 'LOGIN', id: username, token: userToken})
-          try {
-            await AsyncStorage.setItem('userToken', userToken);
-          } catch(e){
-            console.log(e);
-          }
-        };
-        
+        firebase
+        .auth()
+        .signInWithEmailAndPassword(username, password)
+        .then(async() => AsyncStorage.setItem('userToken','key'))
+        .catch(error => console.log(error))
+        dispatch({type: 'LOGIN', id: 'user', token: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null})
       },
-      signUp: async() => {
+      signUp: async(username, password) => {
         let userToken;
-        userToken = 'wasd';
-        try {
-          await AsyncStorage.setItem('userToken', userToken)
-        } catch(e){
-          console.log(e);
-        }
-        dispatch({type: 'REGISTER', id: 'user', token: 'wasd'})
+        userToken = null;
+        firebase
+        .auth()
+        .createUserWithEmailAndPassword(username, password)
+        .then(async() => AsyncStorage.setItem('userToken','key'))
+        .catch(error => console.log(error))
+        dispatch({type: 'REGISTER', id: 'user', token: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null})
       },
       signOut: async() => {
-        try {
-          await AsyncStorage.removeItem('userToken')
-        } catch(e){
-          console.log(e);
-        }
+        firebase
+        .auth()
+        .signOut()
+        .then(() => AsyncStorage.removeItem('userToken'))
+        .catch(error => console.log(error))
         dispatch({type: 'LOGOUT'})
       }
     };
