@@ -79,6 +79,10 @@ export const SignIn = ({ navigation }) => {
     const [email, onChangeEmail] = React.useState('');
     const [password, onChangePassword] = React.useState('');
     const { signIn } = React.useContext(AuthContext);
+
+    const handleStudentLogin = () => {
+      signIn(email, password);
+    };
   
     return (
       <ScreenContainer>
@@ -95,7 +99,7 @@ export const SignIn = ({ navigation }) => {
             onChangeText={text => onChangePassword(text)}
             secureTextEntry={true}
         />
-        <TouchableOpacity style={styles.touchableContainer} onPress={() => signIn(email, password)} >
+        <TouchableOpacity style={styles.touchableContainer} onPress={() => handleStudentLogin()} >
             <Text style={styles.touchableText}>Login</Text>
         </TouchableOpacity>
       </ScreenContainer>
@@ -112,7 +116,7 @@ export const SignIn = ({ navigation }) => {
         signUp(email,password);
         auth.onAuthStateChanged(user => 
           user ? db.collection('users').doc(user.uid).set({userType: 'student'}) : console.log('Not Logged In.')
-        )
+        );
       };
     
     return (
