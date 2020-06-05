@@ -3,20 +3,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import * as firebase from 'firebase';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD47y-yAHSEJXE9RgSwgosKIdEYNf2nVwA",
-  authDomain: "vlog-e051f.firebaseapp.com",
-  databaseURL: "https://vlog-e051f.firebaseio.com",
-  projectId: "vlog-e051f",
-  storageBucket: "vlog-e051f.appspot.com",
-  messagingSenderId: "443390883046",
-  appId: "1:443390883046:web:7a576c4b5509b94a443727",
-  measurementId: "G-5J46PSYM7M"
-};
-
-firebase.initializeApp(firebaseConfig);
+import { auth } from './firebaseConfig';
 
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -124,51 +112,6 @@ const RootStackScreen = ({ userToken }) => (
 
 export default () => {
 
-  const authContext = React.useMemo(() => {
-    return {
-      signIn: async(username, password) => {
-        let userToken;
-        userToken = null;
-        firebase
-        .auth()
-        .signInWithEmailAndPassword(username, password)
-        .then(async() => AsyncStorage.setItem('userToken','key'))
-        .catch(error => console.log(error))
-        dispatch({type: 'LOGIN', id: 'user', token: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null})
-      },
-      signUp: async(username, password) => {
-        let userToken;
-        userToken = null;
-        firebase
-        .auth()
-        .createUserWithEmailAndPassword(username, password)
-        .then(async() => AsyncStorage.setItem('userToken','key'))
-        .catch(error => console.log(error))
-        dispatch({type: 'REGISTER', id: 'user', token: firebase.auth().currentUser ? firebase.auth().currentUser.uid : null})
-      },
-      signOut: async() => {
-        firebase
-        .auth()
-        .signOut()
-        .then(() => AsyncStorage.removeItem('userToken'))
-        .catch(error => console.log(error))
-        dispatch({type: 'LOGOUT'})
-      }
-    };
-  }, []);
-
-  React.useEffect(() => {
-    setTimeout(async() => {
-      let userToken;
-      userToken = null;
-      try {
-        userToken = await AsyncStorage.getItem('userToken');
-      } catch(e){
-        console.log(e);
-      }
-      dispatch({type: 'RETRIEVE_TOKEN', token: userToken});
-    }, 1000);
-  }, []);
 
   const initialLoginState = {
     isLoading: true,
@@ -205,10 +148,48 @@ export default () => {
           userToken: action.token,
           isLoading: false,
         }
+      case 'AUTH':
+        return {
+          ...prevState,
+          userName: null,
+          userToken: null,
+          isLoading: false,
+        }
     }
   }
 
+  const authContext = React.useMemo(() => {
+    return {
+      signIn: (username, password) => {
+        auth
+        .signInWithEmailAndPassword(username, password)
+        .then(cred => dispatch({type: 'LOGIN', id: cred.user.email, token: cred.user.uid}))
+        .catch(error => console.log(error))
+      },
+      signUp: (username, password) => {
+        auth
+        .createUserWithEmailAndPassword(username, password)
+        .then(cred => dispatch({type: 'REGISTER', id: cred.user.email, token: cred.user.uid}))
+        .catch(error => console.log(error))
+      },
+      signOut: () => {
+        auth
+        .signOut()
+        .then(() => dispatch({type: 'LOGOUT'}))
+        .catch(error => console.log(error))
+      }, 
+      }}
+      );
+
+  React.useEffect(() => {
+    setTimeout(() => {
+       auth.onAuthStateChanged(user => user ? dispatch({type: 'LOGIN', id: user.email, token: user.uid}) : dispatch({type: 'LOGOUT'}))
+    }, 1000);
+  }, []);
+
   const [loginState, dispatch] = React.useReducer(loginReducer, initialLoginState);
+
+  console.log(loginState);
 
   if (loginState.isLoading) {
     return <Splash />;

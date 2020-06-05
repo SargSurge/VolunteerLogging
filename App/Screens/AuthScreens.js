@@ -1,18 +1,15 @@
 import React from "react";
 import { View, Text, StyleSheet, Button, TouchableOpacity, TextInput } from "react-native";
-import * as firebase from 'firebase';
+import 'firebase/firestore'
 import { AuthContext } from "../context";
+import AsyncStorage from "@react-native-community/async-storage";
+import { auth, db } from '../firebaseConfig'
 
-const firebaseConfig = {
-    apiKey: "AIzaSyD47y-yAHSEJXE9RgSwgosKIdEYNf2nVwA",
-    authDomain: "vlog-e051f.firebaseapp.com",
-    databaseURL: "https://vlog-e051f.firebaseio.com",
-    projectId: "vlog-e051f",
-    storageBucket: "vlog-e051f.appspot.com",
-    messagingSenderId: "443390883046",
-    appId: "1:443390883046:web:7a576c4b5509b94a443727",
-    measurementId: "G-5J46PSYM7M"
-  };
+import {decode, encode} from 'base-64'
+
+if (!global.btoa) {  global.btoa = encode }
+
+if (!global.atob) { global.atob = decode }
 
 const styles = StyleSheet.create({
   container: {
@@ -62,14 +59,6 @@ const ScreenContainer = ({ children }) => (
   <View style={styles.container}>{children}</View>
 );
 
-function handleSignUp() {
-
-}
-
-function handleLogin() {
-
-}
-
 export const DecisionScreen = ({ navigation }) => {
     return (
         <ScreenContainer>
@@ -117,8 +106,15 @@ export const SignIn = ({ navigation }) => {
     const [name, onChangeName] = React.useState('');
     const [email, onChangeEmail] = React.useState('');
     const [password, onChangePassword] = React.useState('');
-    const { signUp } = React.useContext(AuthContext);
-  
+    const { signUp, userID } = React.useContext(AuthContext);
+
+    const handleStudentSignUp = () => {
+        signUp(email,password);
+        auth.onAuthStateChanged(user => 
+          user ? db.collection('users').doc(user.uid).set({userType: 'student'}) : console.log('Not Logged In.')
+        )
+      };
+    
     return (
       <ScreenContainer>
         <Text style={styles.heading}>Create Account</Text>
@@ -139,7 +135,7 @@ export const SignIn = ({ navigation }) => {
             onChangeText={text => onChangePassword(text)}
             secureTextEntry={true}
         />
-        <TouchableOpacity style={styles.touchableContainer} onPress={() => signUp(email, password)} >
+        <TouchableOpacity style={styles.touchableContainer} onPress={() => handleStudentSignUp()} >
             <Text style={styles.touchableText}>Create Account</Text>
         </TouchableOpacity>
         </ScreenContainer>
