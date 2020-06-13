@@ -1,9 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, Button, TouchableOpacity, TextInput } from "react-native";
 import 'firebase/firestore'
-import { AuthContext } from "../context";
-import AsyncStorage from "@react-native-community/async-storage";
-import { auth, db } from '../firebaseConfig'
+import { db } from '../firebaseConfig'
+import { FloatingAction } from "react-native-floating-action";
 
 import {decode, encode} from 'base-64'
 
@@ -16,7 +15,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 20,
-    paddingTop: 120
+    paddingTop: 50
   },
   button: {
     paddingHorizontal: 20,
@@ -55,26 +54,89 @@ const styles = StyleSheet.create({
 
 });
 
+const actions = [
+    {
+      text: "Check in to Event",
+      //icon: require("./images/ic_accessibility_white.png"),
+      name: "bt_checkin",
+      position: 2
+    },
+    {
+      text: "Add Event",
+      //icon: require("./images/ic_language_white.png"),
+      name: "bt_add",
+      position: 1
+    },
+  ];
+
 // Fetch Events from db
 
 const ScreenContainer = ({ children }) => (
   <View style={styles.container}>{children}</View>
 );
 
-export const EventScreen = ({navigation}) => (
-    <View>
-        <Text>Add events by clicking the plus sign below.</Text>
-    </View>
-);
+function FloatingPress(name, navigation) {
+    if(name==='bt_add'){
+        navigation.navigate('AddEvent');
+    } 
+};
 
-export const AddEvent = ({navigation}) => (
-    <ScreenContainer>
+export const EventScreen = ({navigation}) => {
+    return (
+        <ScreenContainer>
+            <Text>Add events by clicking the plus sign below.</Text>
+            <FloatingAction
+                showBackground={false}
+                actions={actions}
+                onPressItem={name => {
+                FloatingPress(name, navigation);
+                }}
+            />
+        </ScreenContainer>
+    );
+};
 
-    </ScreenContainer>
-);
+export const AddEvent = ({navigation}) => {
+    const [eventName, onChangeName] = React.useState('');
+    const [date, onChangeDate] = React.useState('');
+    const [hours, onChangeHours] = React.useState('');
+    const [organization, onChangeOrg] = React.useState('');
 
-export const EventDetails = ({navigation, event}) => (
-    <View>
+    return (
 
-    </View>
-);
+        <ScreenContainer>
+            <TextInput
+                style={styles.input}
+                placeholder="Event Name"
+                onChangeText={text => onChangeName(text)}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Date"
+                onChangeText={text => onChangeDate(text)}
+            />
+            <TextInput
+                keyboardType={'numeric'}
+                style={styles.input}
+                placeholder="Number of Hours"
+                onChangeText={text => onChangeHours(text)}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Organization"
+                onChangeText={text => onChangeOrg(text)}
+            />
+            <TouchableOpacity style={styles.touchableContainer} >
+                <Text style={styles.touchableText}>Add Event</Text>
+            </TouchableOpacity>
+        </ScreenContainer>
+    );
+};
+
+export const EventDetails = ({navigation, event}) => {
+    return (
+        <View>
+
+        </View>
+    );
+};

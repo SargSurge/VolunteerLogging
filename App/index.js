@@ -86,8 +86,8 @@ const EventStack = createStackNavigator();
 const EventStackScreen = () => (
   <EventStack.Navigator>
     <EventStack.Screen name='Events' component={EventScreen} />
-    <EventStack.Screen name='Add Event' component={AddEvent} />
-    <EventStack.Screen name='Event Details' component={EventDetails} /> 
+    <EventStack.Screen name='AddEvent' options={{title: 'Add Event'}} component={AddEvent} />
+    <EventStack.Screen name='EventDetails' component={EventDetails} /> 
   </EventStack.Navigator>
 );
 
