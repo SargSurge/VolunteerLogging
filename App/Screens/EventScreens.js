@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, Button, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, StyleSheet, Button, TouchableOpacity, TextInput, Alert } from "react-native";
 import 'firebase/firestore'
-import { db } from '../firebaseConfig'
+import { auth, db } from '../firebaseConfig'
 import { FloatingAction } from "react-native-floating-action";
 
 import {decode, encode} from 'base-64'
@@ -69,19 +69,24 @@ const actions = [
     },
   ];
 
-// Fetch Events from db
+
 
 const ScreenContainer = ({ children }) => (
   <View style={styles.container}>{children}</View>
 );
 
-function FloatingPress(name, navigation) {
-    if(name==='bt_add'){
-        navigation.navigate('AddEvent');
-    } 
-};
-
 export const EventScreen = ({navigation}) => {
+    
+    const [events, setEvents] = React.useState([]);
+    
+    // Fetch Events from db and set state
+
+    function FloatingPress(name, navigation) {
+        if(name==='bt_add'){
+            navigation.navigate('AddEvent');
+        } 
+    };
+
     return (
         <ScreenContainer>
             <Text>Add events by clicking the plus sign below.</Text>
@@ -97,13 +102,37 @@ export const EventScreen = ({navigation}) => {
 };
 
 export const AddEvent = ({navigation}) => {
+    
     const [eventName, onChangeName] = React.useState('');
     const [date, onChangeDate] = React.useState('');
     const [hours, onChangeHours] = React.useState('');
-    const [organization, onChangeOrg] = React.useState('');
+    const [organization, onChangeOrg] = React.useState('none');
+
+    function handleSubmit() {
+        
+        if (eventName != '' && date != '' && hours != '') {
+            auth.onAuthStateChanged(user => 
+                user ? db.collection('users').doc(user.uid).collection('events').add({
+                    'eventName': eventName,
+                    'date': date,
+                    'hours': hours,
+                    'organization': organization,
+                    }) 
+                    : console.log('Not Logged In.')
+            )
+            
+            navigation.navigate('Events')
+
+        } else {
+            Alert.alert(
+                "Error",
+                "Missing a required field.",
+                [{text: "OK"}]
+            )
+        }
+    }
 
     return (
-
         <ScreenContainer>
             <TextInput
                 style={styles.input}
@@ -123,10 +152,10 @@ export const AddEvent = ({navigation}) => {
             />
             <TextInput
                 style={styles.input}
-                placeholder="Organization"
+                placeholder="Organization (Optional)"
                 onChangeText={text => onChangeOrg(text)}
             />
-            <TouchableOpacity style={styles.touchableContainer} >
+            <TouchableOpacity style={styles.touchableContainer} onPress={() => handleSubmit()} >
                 <Text style={styles.touchableText}>Add Event</Text>
             </TouchableOpacity>
         </ScreenContainer>
