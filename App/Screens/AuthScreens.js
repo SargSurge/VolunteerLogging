@@ -2,7 +2,6 @@ import React from "react";
 import { View, Text, StyleSheet, Button, TouchableOpacity, TextInput } from "react-native";
 import 'firebase/firestore'
 import { AuthContext } from "../context";
-import AsyncStorage from "@react-native-community/async-storage";
 import { auth, db } from '../firebaseConfig'
 
 import {decode, encode} from 'base-64'
