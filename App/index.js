@@ -19,6 +19,7 @@ import {
 } from "./Screens.js";
 
 import { SignIn, CreateAccount, DecisionScreen } from "./Screens/AuthScreens"
+import { EventScreen, AddEvent, EventDetails } from "./Screens/EventScreens"
 
 const AuthStack = createStackNavigator();
 const AuthStackScreen = () => (
@@ -79,6 +80,23 @@ const TabsScreen = () => (
   </Tabs.Navigator>
 );
 
+const MainTabs = createBottomTabNavigator();
+const EventStack = createStackNavigator();
+
+const EventStackScreen = () => (
+  <EventStack.Navigator>
+    <EventStack.Screen name='Events' component={EventScreen} />
+    <EventStack.Screen name='Add Event' component={AddEvent} />
+    <EventStack.Screen name='Event Details' component={EventDetails} /> 
+  </EventStack.Navigator>
+);
+
+const MainTabsScreen = () => (
+  <MainTabs.Navigator initialRouteName="Events">
+    <MainTabs.Screen name="Events" component={EventStackScreen} />
+  </MainTabs.Navigator>
+);
+
 const Drawer = createDrawerNavigator();
 const DrawerScreen = () => (
   <Drawer.Navigator initialRouteName="Profile">
@@ -93,7 +111,7 @@ const RootStackScreen = ({ userToken }) => (
     {userToken ? (
       <RootStack.Screen
         name="App"
-        component={DrawerScreen}
+        component={MainTabsScreen}
         options={{
           animationEnabled: false
         }}
@@ -111,7 +129,6 @@ const RootStackScreen = ({ userToken }) => (
 );
 
 export default () => {
-
 
   const initialLoginState = {
     isLoading: true,
